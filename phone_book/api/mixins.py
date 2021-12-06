@@ -1,11 +1,10 @@
 from rest_framework import mixins, viewsets
 
 
-class CreateListRetrieveUpdateViewSet(
+class CreateListRetrieveViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
     viewsets.GenericViewSet
 ):
     pass

@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 
 from .models import Company, Employee
 
-
 User = get_user_model()
 
 
@@ -15,6 +14,7 @@ class CompanyAdmin(admin.ModelAdmin):
         'description',
         'owner',
     )
+    list_filter = ('owner', 'name')
 
 
 class EmployeeAdmin(admin.ModelAdmin):
@@ -29,6 +29,7 @@ class EmployeeAdmin(admin.ModelAdmin):
         'fax',
         'company'
     )
+    list_filter = ('company', )
 
 
 class UserAdmin(admin.ModelAdmin):

@@ -1,5 +1,5 @@
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import RegexValidator
 from django.db import models
 
@@ -47,6 +47,9 @@ class User(AbstractUser):
         verbose_name='Компании, которые юзер имеет право редактировать'
     )
 
+    class Meta:
+        ordering = ['id']
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -74,6 +77,7 @@ class Company(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'Организация'
         verbose_name_plural = 'Организации'
 
@@ -129,6 +133,7 @@ class Employee(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'Сотрудник'
         verbose_name_plural = 'Сотрудники'
 

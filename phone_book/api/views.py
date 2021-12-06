@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .mixins import CreateListRetrieveUpdateViewSet
+
+from .mixins import CreateListRetrieveViewSet
 from .models import Company, Employee
 from .serializers import (EmployeeSerializer, CompanySerializer,
                           UserSerializer, UserSetRightsSeriazlizer)
@@ -23,6 +24,14 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     permission_classes = [IsCompanyOwnerOrReadOnly, ]
+    filter_backends = [filters.SearchFilter]
+    search_fields = [
+        'name',
+        'employees__last_name',
+        'employees__first_name',
+        'employees__middle_name',
+        'employees__personal_phone'
+    ]
 
     def get_serializer_class(self):
         if self.action == 'grant_rigths_to_edit':
@@ -73,9 +82,9 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=[permissions.IsAuthenticated],
     )
-    def editable_companies(self, request):
+    def editable_by_me(self, request):
         user = request.user
         companies = user.rights_to_edit_companies.all()
 
@@ -88,9 +97,20 @@ class CompanyViewSet(viewsets.ModelViewSet):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class UserViewSet(CreateListRetrieveUpdateViewSet):
+class UserViewSet(CreateListRetrieveViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [SignUpOrIsAuthentificatedOrSelf, ]
 
-
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def editing_my_companies(self, request):
+        users_with_rights = User.objects.filter(
+            rights_to_edit_companies__owner=request.user).distinct()
+        serializer = self.get_serializer(users_with_rights, many=True)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )

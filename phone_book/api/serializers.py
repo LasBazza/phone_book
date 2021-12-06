@@ -25,7 +25,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'company'
         )
         extra_kwargs = {
-            'company': {'write_only': True, 'required': True},
+            'company': {'required': True},
             'office_phone': {'required': False},
             'fax': {'required': False},
             'middle_name': {'required': False},
@@ -79,13 +79,37 @@ class CompanySerializer(serializers.ModelSerializer):
         }
 
 
+class ShortCompanySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Company
+        fields = ('name', 'id')
+
+
 class UserSerializer(UserCreateSerializer):
+    own_companies = serializers.SerializerMethodField(read_only=True)
+    rights_to_edit_companies = serializers.StringRelatedField(
+        many=True,
+        read_only=True
+    )
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'username')
+        fields = (
+            'id',
+            'email',
+            'password',
+            'username',
+            'rights_to_edit_companies',
+            'own_companies'
+        )
 
         extra_kwargs = {'username': {'required': False}}
+
+    def get_own_companies(self, obj):
+        own_companies = Company.objects.filter(owner=obj)
+        serializer = ShortCompanySerializer(own_companies, many=True)
+        return serializer.data
 
 
 class UserSetRightsSeriazlizer(serializers.Serializer):
